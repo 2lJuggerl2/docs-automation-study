@@ -1,0 +1,332 @@
+openapi: 3.1.0
+info:
+  title: УЛР — учебный лабораторный реестр
+  version: 1.0.0
+  summary: REST-сервис учёта лабораторных работ, студентов и сдач.
+  description: |
+    Спецификация описывает публичный REST API сервиса УЛР.
+
+    Все запросы и ответы — в формате JSON (`application/json`).
+    Идентификаторы — целые числа, назначаемые сервером.
+
+    Спецификация служит единственным источником истины: страница Swagger UI
+    и раздел [REST API](../docs/03_api.html) собираются из этого файла.
+  contact:
+    name: Учебный проект, группа ИСП-241/9
+  license:
+    name: MIT
+servers:
+  - url: https://api.ulr.local/api/v1
+    description: Продуктивный контур
+  - url: http://localhost:8080/api/v1
+    description: Локальный стенд разработчика
+tags:
+  - name: works
+    description: Каталог лабораторных работ
+  - name: students
+    description: Обучающиеся
+  - name: submissions
+    description: Сдачи работ и оценки
+paths:
+  /works:
+    get:
+      tags: [works]
+      summary: Список работ
+      operationId: listWorks
+      parameters:
+        - name: discipline
+          in: query
+          description: Фильтр по коду дисциплины
+          schema:
+            type: string
+            example: МДК.01.02
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Массив работ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Work"
+              examples:
+                sample:
+                  value:
+                    - id: 7
+                      code: "ЛР-3.4"
+                      title: Автоматизация разработки технической документации
+                      discipline: МДК.01.02
+                      dueDate: "2026-02-16"
+    post:
+      tags: [works]
+      summary: Добавить работу
+      operationId: createWork
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkInput"
+      responses:
+        "201":
+          description: Работа создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Work"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /works/{workId}:
+    parameters:
+      - name: workId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 7
+    get:
+      tags: [works]
+      summary: Получить работу
+      operationId: getWork
+      responses:
+        "200":
+          description: Найденная работа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Work"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /students:
+    get:
+      tags: [students]
+      summary: Список студентов
+      operationId: listStudents
+      parameters:
+        - name: group
+          in: query
+          description: Учебная группа
+          schema:
+            type: string
+            example: ИСП-241/9
+      responses:
+        "200":
+          description: Массив студентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+  /submissions:
+    get:
+      tags: [submissions]
+      summary: Список сдач
+      operationId: listSubmissions
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+        - name: workId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/Status"
+      responses:
+        "200":
+          description: Массив сдач
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+    post:
+      tags: [submissions]
+      summary: Зафиксировать сдачу работы
+      operationId: createSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentId, workId]
+              properties:
+                studentId:
+                  type: integer
+                  example: 41
+                workId:
+                  type: integer
+                  example: 7
+      responses:
+        "201":
+          description: Сдача зафиксирована
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "409":
+          description: Сдача по этой работе уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /submissions/{submissionId}:
+    parameters:
+      - name: submissionId
+        in: path
+        required: true
+        schema:
+          type: integer
+          example: 132
+    patch:
+      tags: [submissions]
+      summary: Выставить оценку
+      operationId: gradeSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [grade]
+              properties:
+                grade:
+                  type: integer
+                  minimum: 2
+                  maximum: 5
+                  example: 5
+                comment:
+                  type: string
+                  maxLength: 500
+      responses:
+        "200":
+          description: Оценка сохранена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  schemas:
+    Work:
+      type: object
+      required: [id, code, title, discipline]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+          example: "ЛР-3.4"
+        title:
+          type: string
+        discipline:
+          type: string
+        dueDate:
+          type: string
+          format: date
+    WorkInput:
+      type: object
+      required: [code, title, discipline]
+      properties:
+        code:
+          type: string
+          minLength: 3
+        title:
+          type: string
+          minLength: 5
+        discipline:
+          type: string
+        dueDate:
+          type: string
+          format: date
+    Student:
+      type: object
+      required: [id, fullName, group]
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        group:
+          type: string
+          example: ИСП-241/9
+    Submission:
+      type: object
+      required: [id, studentId, workId, status]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        workId:
+          type: integer
+        status:
+          $ref: "#/components/schemas/Status"
+        submittedAt:
+          type: string
+          format: date-time
+        grade:
+          type: integer
+          nullable: true
+          minimum: 2
+          maximum: 5
+    Status:
+      type: string
+      enum: [submitted, graded, returned]
+      description: |
+        `submitted` — работа предъявлена, ожидает проверки;
+        `graded` — оценка выставлена;
+        `returned` — работа возвращена на доработку.
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: conflict
+        message:
+          type: string
+    ValidationError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: validation_error
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+  responses:
+    NotFound:
+      description: Объект не найден
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationError:
+      description: Ошибка валидации входных данных
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
