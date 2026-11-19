@@ -1,0 +1,26 @@
+@startuml pipeline
+!theme plain
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #F7F9FC
+  BorderColor #4B5563
+  DiamondBackgroundColor #FEF3C7
+}
+
+start
+:git push в main;
+:GitHub Actions\ncheckout + setup-node 20;
+: npm ci ;
+if (npm run check) then (успех)
+  :npm run build\ndocs/*.md → site/*.html;
+  :upload-pages-artifact;
+  :deploy-pages;
+  :сайт обновлён\nhttps://2lJuggerl2.github.io/docs-automation-study/;
+  stop
+else (ошибка)
+  :сборка остановлена;
+  :правка не опубликована;
+  stop
+endif
+@enduml

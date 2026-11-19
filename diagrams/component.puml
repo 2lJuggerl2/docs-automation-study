@@ -1,0 +1,31 @@
+@startuml component
+!theme plain
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+package "Клиент" {
+  [Веб-клиент\n(SPA)] as Web
+}
+
+package "Сервер приложений" {
+  [API-сервис\nFastAPI] as API
+  [Отчётный модуль] as Report
+}
+
+database "PostgreSQL" {
+  [students] as T1
+  [works] as T2
+  [submissions] as T3
+}
+
+cloud "Внешние потребители" {
+  [Скрипт выгрузки\nCSV] as CSV
+}
+
+Web --> API : HTTPS / JSON
+API --> T1
+API --> T2
+API --> T3
+Report --> T3 : чтение оценок
+Report --> CSV : файл .csv
+@enduml

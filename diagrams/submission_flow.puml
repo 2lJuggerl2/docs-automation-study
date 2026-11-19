@@ -1,0 +1,23 @@
+@startuml submission_flow
+!theme plain
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+actor "Студент" as S
+participant "Веб-клиент" as C
+participant "API-сервис" as A
+database "PostgreSQL" as DB
+
+S -> C : выбрать работу
+C -> A : POST /api/v1/submissions
+A -> DB : SELECT студент, работа
+DB --> A : записи найдены
+A -> A : проверка дубликата
+A -> DB : INSERT submission (status=submitted)
+DB --> A : id записи
+A --> C : 201 Created
+C --> S : запись создана
+
+S -> C : ожидать проверки
+note right of A : оценка выставляется\nпреподавателем отдельно
+@enduml
