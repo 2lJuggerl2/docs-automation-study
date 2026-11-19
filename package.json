@@ -1,0 +1,15 @@
+{
+  "name": "docs-automation-study",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Учебный репозиторий: конвейер технической документации по принципам Docs-as-Code",
+  "type": "module",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "check": "node tools/check.mjs"
+  },
+  "devDependencies": {
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0"
+  }
+}
