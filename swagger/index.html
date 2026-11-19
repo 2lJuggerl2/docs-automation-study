@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>УЛР — спецификация REST API</title>
+  <link rel="stylesheet" href="swagger-ui.css">
+  <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+  <style>
+    body { margin: 0; background: #fafafa; }
+    .swagger-header {
+      font-family: "Segoe UI", Arial, sans-serif;
+      padding: 14px 24px;
+      background: #1f2937;
+      color: #f9fafb;
+      display: flex;
+      gap: 24px;
+      align-items: baseline;
+    }
+    .swagger-header a { color: #93c5fd; text-decoration: none; font-size: 14px; }
+    .swagger-header .title { font-size: 16px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="swagger-header">
+    <span class="title">УЛР — учебный лабораторный реестр, API v1.0.0</span>
+    <a href="../index.html">← к документации</a>
+    <a href="../openapi.yaml">openapi.yaml</a>
+  </div>
+  <div id="swagger-ui"></div>
+  <script src="swagger-ui-bundle.js" charset="UTF-8"></script>
+  <script src="swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: "../openapi.yaml",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        docExpansion: "list",
+        defaultModelsExpandDepth: 1,
+        presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+        layout: "StandaloneLayout"
+      });
+    };
+  </script>
+</body>
+</html>
