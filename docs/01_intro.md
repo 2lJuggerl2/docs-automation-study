@@ -11,3 +11,5 @@
 - Изучить инструменты автоматизации.
 
 - Навести порядок в файлах.
+<img width="398" height="352" alt="изображение" src="https://github.com/user-attachments/assets/b9232f7e-421b-43c5-81c9-4aec8ee38395" />
+
